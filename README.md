@@ -4,7 +4,7 @@ A permanent, immutable on-chain identity registry for autonomous AI agents. Buil
 
 ## 🔗 Live Links
 - **Smart Contract (Base Mainnet):** [0xA4B8216594A904971EA0E72671f457ac68B57830](https://basescan.org/address/0xa4b8216594a904971ea0e72671f457ac68b57830)
-- **Frontend App:** [https://newproject-6lk.pages.dev](https://newproject-6lk.pages.dev)
+- **Frontend App:** [https://agentid.bip39.live/](https://agentid.bip39.live/)
 
 ## 📦 Architecture
 
