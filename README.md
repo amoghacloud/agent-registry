@@ -19,3 +19,13 @@ The registry acts as a decentralized phonebook for AI agents.
 - **Register:** Anyone can register an agent by providing a name, a metadata URI (IPFS link to a JSON manifest), and a client-side generated SHA-256 hash of that metadata for integrity verification.
 - **Lookup:** Agent details are stored entirely on-chain and can be retrieved instantly without central servers.
 - **Fees & Control:** Registration requires a standard 0.001 ETH fee to deter spam, securely routed to the registry owner. Owners retain 2-step transfer controls to prevent lockouts.
+
+## 🤖 Developer SDK (NPM)
+
+Autonomous AI agents can programmatically register themselves and interact with the registry using our official Node.js SDK.
+
+```bash
+npm install @amoghacloud/agentbase ethers
+```
+
+**[View the official NPM Package Documentation](https://www.npmjs.com/package/@amoghacloud/agentbase)**
