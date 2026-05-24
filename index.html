@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentRegistry | Identity Protocol</title>
+    <meta name="description" content="Permanent, immutable on-chain identity registry for autonomous AI agents.">
+    
+    <!-- SEO Tags -->
+    <meta property="og:title" content="AgentRegistry">
+    <meta property="og:description" content="Permanent on-chain identity registry for autonomous AI agents on Base Mainnet.">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+    
+    <!-- Ethers.js v6 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.11.1/ethers.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f9f8f6;
+            --panel-bg: transparent;
+            --text-main: #1e1e1e;
+            --text-muted: #6b6b6b;
+            --primary: #d97757; /* Claude Terracotta */
+            --primary-hover: #c46445;
+            --border-color: #e5e3df;
+            --radius: 16px;
+        }
+
+        body {
+            font-family: Charter, Georgia, Cambria, "Times New Roman", serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 2rem 1.5rem;
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+        }
+
+        .logo {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-weight: 500;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 2rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .mint-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+
+        .panel:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-weight: normal;
+            color: var(--text-main);
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        button {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        button:hover {
+            background: #fdfdfc;
+            border-color: #d2cfc9;
+        }
+
+        button.primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            box-shadow: none;
+        }
+
+        button.primary:hover {
+            background: var(--primary-hover);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        input {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 1rem 1.2rem;
+            width: 100%;
+            border-radius: var(--radius);
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        input:focus {
+            border-color: #d2cfc9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 1.5rem;
+        }
+
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+            font-size: 0.9rem;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .result-error {
+            color: #d95757;
+        }
+
+        .badge {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: inline-block;
+            background: transparent;
+            padding: 0;
+            font-size: 0.85rem;
+            margin-right: 1rem;
+            color: var(--text-muted);
+        }
+
+        .active-badge {
+            color: #3b8c5e;
+        }
+
+        .help-text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .mint-box {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                        <path d="M12,2A2,2 0 0,1 14,4C14,4.74 13.6,5.39 13,5.73V7H14A7,7 0 0,1 21,14H22A1,1 0 0,1 23,15V18A1,1 0 0,1 22,19H21V20A2,2 0 0,1 19,22H5A2,2 0 0,1 3,20V19H2A1,1 0 0,1 1,18V15A1,1 0 0,1 2,14H3A7,7 0 0,1 10,7H11V5.73C10.4,5.39 10,4.74 10,4A2,2 0 0,1 12,2M7.5,13A2.5,2.5 0 0,0 5,15.5A2.5,2.5 0 0,0 7.5,18A2.5,2.5 0 0,0 10,15.5A2.5,2.5 0 0,0 7.5,13M16.5,13A2.5,2.5 0 0,0 14,15.5A2.5,2.5 0 0,0 16.5,18A2.5,2.5 0 0,0 19,15.5A2.5,2.5 0 0,0 16.5,13Z" />
+                    </svg>
+                </div> 
+                AgentRegistry
+            </div>
+            <div>
+                <span class="badge" id="networkBadge">Read-Only</span>
+                <button id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+            </div>
+        </header>
+
+        <!-- Stats Section -->
+        <div class="panel">
+            <h2>Network Overview</h2>
+            <div class="subtitle">Live statistics from the Base Mainnet contract.</div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Total Agents</span>
+                    <span class="stat-value" id="statAgents">--</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Contract TVL (ETH)</span>
+                    <span class="stat-value" id="statBalance">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Section -->
+        <div class="mint-box">
+            <h2>Mint an Agent Identity</h2>
+            <div class="subtitle">Append a new identity to the immutable ledger. Fee: 0.001 ETH.</div>
+            
+            <div class="form-group">
+                <label>Agent Name</label>
+                <input type="text" id="regName" placeholder="e.g. Nexus-7">
+            </div>
+            
+            <div class="form-group">
+                <label>Model Type</label>
+                <input type="text" id="regModel" placeholder="e.g. Claude 3.5 Sonnet">
+            </div>
+            
+            <div class="form-group">
+                <label>Metadata URI</label>
+                <input type="text" id="regURI" placeholder="https://...">
+                <div class="help-text">A link to where your agent's JSON manifest is permanently hosted.</div>
+            </div>
+
+            <button class="primary" onclick="registerAgent()" id="regBtn" style="margin-top: 1rem;">
+                <span id="regText">Register Identity</span>
+            </button>
+            <div id="regResult" class="result-box"></div>
+        </div>
+
+        <!-- Lookup Section -->
+        <div class="panel">
+            <h2>Query Identity</h2>
+            <div class="subtitle">Look up an existing agent's public details using their ID.</div>
+            
+            <div class="form-group">
+                <input type="number" id="lookupId" placeholder="Enter Agent ID (e.g. 1)">
+            </div>
+            
+            <button onclick="lookupAgent()">Search Ledger</button>
+            <div id="lookupResult" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESS = "0xA4B8216594A904971EA0E72671f457ac68B57830";
+        const CHAIN_ID = 8453; // Base Mainnet
+        
+        const ABI = [
+            "function register(string name, string metadataURI, bytes32 metadataHash) external payable returns (uint256)",
+            "function getAgent(uint256 id) external view returns (tuple(uint256 id, address controller, string name, string metadataURI, bytes32 metadataHash, uint256 createdAt, bool active))",
+            "function getStats() external view returns (uint256 _totalAgents, uint256 _totalDonations, uint256 _totalFees, uint256 _balance)",
+            "event AgentRegistered(uint256 indexed id, address indexed controller, string name, bytes32 metadataHash, uint256 timestamp)"
+        ];
+
+        let provider;
+        let signer;
+        let contract;
+
+        async function generateMetadataHash(name, model, metadataURI) {
+            const metadata = { name, model, metadataURI, createdAt: Date.now() };
+            const encoded = new TextEncoder().encode(JSON.stringify(metadata));
+            const hashBuf = await crypto.subtle.digest("SHA-256", encoded);
+            const hashHex = Array.from(new Uint8Array(hashBuf))
+                .map(b => b.toString(16).padStart(2, "0"))
+                .join("");
+            return "0x" + hashHex;
+        }
+
+        function displayError(err) {
+            let msg = "An unknown error occurred.";
+            if (err.code === "ACTION_REJECTED" || (err.message && err.message.includes("user rejected"))) {
+                msg = "Transaction was cancelled in your wallet.";
+            } else if (err.reason) {
+                msg = err.reason;
+            } else if (err.message) {
+                msg = err.message.split("(")[0].trim();
+            }
+            return msg;
+        }
+
+        async function connectWallet() {
+            if (!window.ethereum) {
+                alert("Please install a Web3 wallet like MetaMask.");
+                return;
+            }
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                const network = await provider.getNetwork();
+                
+                if (Number(network.chainId) !== CHAIN_ID) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: ethers.toBeHex(CHAIN_ID) }],
+                        });
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                    } catch (e) {
+                        alert("Please switch your wallet to the Base Mainnet.");
+                        return;
+                    }
+                }
+
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+                
+                const address = await signer.getAddress();
+                document.getElementById('connectBtn').innerText = `${address.substring(0,6)}...${address.substring(38)}`;
+                
+                const badge = document.getElementById('networkBadge');
+                badge.innerText = "Base Mainnet";
+                badge.classList.add('active-badge');
+
+                await loadStats();
+            } catch (err) {
+                console.error(err);
+                alert(displayError(err));
+            }
+        }
+
+        async function loadStats() {
+            if (!contract) {
+                const readProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
+            }
+
+            try {
+                const stats = await contract.getStats();
+                document.getElementById('statAgents').innerText = stats[0].toString();
+                document.getElementById('statBalance').innerText = ethers.formatEther(stats[3]);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function registerAgent() {
+            if (!signer) {
+                alert("Please connect your wallet first.");
+                return;
+            }
+
+            const name = document.getElementById('regName').value;
+            const model = document.getElementById('regModel').value;
+            const uri = document.getElementById('regURI').value;
+
+            if (!name || !uri) {
+                alert("Please provide both an Agent Name and a Metadata URI.");
+                return;
+            }
+
+            const btn = document.getElementById('regBtn');
+            const resBox = document.getElementById('regResult');
+
+            try {
+                btn.disabled = true;
+                btn.innerText = "Processing...";
+                resBox.style.display = 'none';
+                resBox.classList.remove('result-error');
+
+                const hash = await generateMetadataHash(name, model, uri);
+                const fee = ethers.parseEther("0.001");
+                
+                const tx = await contract.register(name, uri, hash, { value: fee });
+                
+                resBox.style.display = 'block';
+                resBox.innerHTML = `Transaction pending...\nHash: ${tx.hash}`;
+
+                const receipt = await tx.wait();
+                
+                let newId = "?";
+                for (const log of receipt.logs) {
+                    try {
+                        const parsed = contract.interface.parseLog(log);
+                        if (parsed && parsed.name === "AgentRegistered") {
+                            newId = parsed.args.id.toString();
+                        }
+                    } catch (e) { }
+                }
+
+                resBox.innerHTML = `Success! Agent registered.\nID: ${newId}\nTx: ${tx.hash}`;
+                loadStats();
+                
+            } catch (err) {
+                console.error(err);
+                resBox.style.display = 'block';
+                resBox.classList.add('result-error');
+                resBox.innerHTML = displayError(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Register Identity";
+            }
+        }
+
+        async function lookupAgent() {
+            const id = document.getElementById('lookupId').value;
+            if (!id) return;
+
+            const resBox = document.getElementById('lookupResult');
+            resBox.classList.remove('result-error');
+            
+            try {
+                resBox.style.display = 'block';
+                resBox.innerHTML = `Querying...`;
+
+                if (!contract) {
+                    const readProvider = new ethers.JsonRpcProvider("https://mainnet.base.org");
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, readProvider);
+                }
+
+                const agent = await contract.getAgent(id);
+                
+                resBox.innerHTML = `Name: ${agent.name}
+ID: ${agent.id}
+Status: ${agent.active ? "Active" : "Inactive"}
+Controller: ${agent.controller}
+URI: ${agent.metadataURI}`;
+
+            } catch (err) {
+                console.error(err);
+                resBox.classList.add('result-error');
+                resBox.innerHTML = displayError(err);
+            }
+        }
+
+        window.addEventListener('load', loadStats);
+    </script>
+</body>
+</html>
